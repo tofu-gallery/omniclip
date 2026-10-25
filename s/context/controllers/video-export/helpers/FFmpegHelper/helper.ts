@@ -1,5 +1,4 @@
 import {signals} from "@benev/slate"
-import {FFprobeWorker} from "ffprobe-wasm/browser.mjs"
 import {FFmpeg} from "@ffmpeg/ffmpeg/dist/esm/index.js"
 import {toBlobURL} from "@ffmpeg/util/dist/esm/index.js"
 import {fetchFile} from "@ffmpeg/util/dist/esm/index.js"
@@ -11,7 +10,6 @@ import {isEffectMuted} from "../../../compositor/utils/is_effect_muted.js"
 
 export class FFmpegHelper {
 	ffmpeg = new FFmpeg()
-	ffprobe = new FFprobeWorker()
 	is_loading = signals.op<any>()
 	isLoading: Promise<any>
 
@@ -86,11 +84,6 @@ export class FFmpegHelper {
 
 	async get_muxed_file(name: string) {
 		return await this.ffmpeg.readFile(name) as Uint8Array
-	}
-
-	async get_frames_count(file: File) {
-		const probe = await this.ffprobe.getFrames(file, 1)
-		return probe.nb_frames
 	}
 
 }
