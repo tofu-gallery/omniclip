@@ -1,4 +1,4 @@
-Omniclip, as built for Tofu's gallery by scripts/tofu-build.mjs. Omniclip itself is MIT-licensed (../LICENSE).
+Omniclip, as built for Tofu's gallery by scripts/tofu-build.mjs. Omniclip itself is MIT-licensed (../LICENSE.txt).
 
 ==============================================================================
 

@@ -131,9 +131,11 @@ while (queue.length) {
 	}
 }
 
-// 3c. Licences: Omniclip's, the fonts' (beside the fonts), and a list of the code inside the bundles.
-copy(join(root, 'LICENSE'), join(site, 'LICENSE'))
-for (const file of ['assets/fonts/Nippo/License/FFL.txt', 'assets/fonts/Poppins/License/OFL.txt', 'assets/fonts/NotoEmoji/license.md']) copy(join(root, file), join(site, file))
+// 3c. Licences: Omniclip's, the fonts' (beside the fonts), and a list of the code inside the bundles. They are written
+//     as .txt: Tofu's static hosting leaves out repository text such as LICENSE or license.md.
+copy(join(root, 'LICENSE'), join(site, 'LICENSE.txt'))
+for (const file of ['assets/fonts/Nippo/License/FFL.txt', 'assets/fonts/Poppins/License/OFL.txt']) copy(join(root, file), join(site, file))
+copy(join(root, 'assets/fonts/NotoEmoji/license.md'), join(site, 'assets/fonts/NotoEmoji/license.txt'))
 const packages = new Map()
 for (const input of Object.keys(built.metafile.inputs)) {
 	const m = input.match(/^(.*node_modules\/)((?:@[^/]+\/)?[^/]+)\//)
@@ -157,7 +159,7 @@ const vendored = [
 ].map(([label, file]) => `${label}\n\n${readFileSync(join(root, file), 'utf8').trim()}`)
 mkdirSync(join(site, 'licenses'), {recursive: true})
 writeFileSync(join(site, 'licenses/THIRD-PARTY-LICENSES.txt'), [
-	'Omniclip, as built for Tofu\'s gallery by scripts/tofu-build.mjs. Omniclip itself is MIT-licensed (../LICENSE).',
+	'Omniclip, as built for Tofu\'s gallery by scripts/tofu-build.mjs. Omniclip itself is MIT-licensed (../LICENSE.txt).',
 	'The bundles (main.js and the four *worker.js files) contain the npm packages below; s/tools/mp4boxjs/mp4box.js is a copy of mp4box (listed below).',
 	'Scripts, styles and fonts the page loads from CDNs (jsDelivr, unpkg, Google Fonts) are not part of this site; TOFU.md in the source lists them.',
 	...sections, ...vendored,
