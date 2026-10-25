@@ -16,7 +16,6 @@ import {OmniAnim} from "./components/omni-anim/component.js"
 import {OmniMedia} from "./components/omni-media/component.js"
 import {FiltersPanel} from './components/omni-filters/panel.js'
 import {TimelinePanel} from "./components/omni-timeline/panel.js"
-import {LandingPage} from './components/landingpage/component.js'
 import {OmniManager} from './components/omni-manager/component.js'
 import {OmniFilters} from './components/omni-filters/component.js'
 import {CollaborationManager} from './views/collaboration/view.js'
@@ -62,7 +61,7 @@ export function setupContext(projectId: string) {
 	return omnislate
 }
 
-register_to_dom({OmniManager, LandingPage})
+register_to_dom({OmniManager})
 let registered = false
 
 export function removeLoadingPageIndicator() {
@@ -134,8 +133,11 @@ const VideoEditor =  (omnislate: Nexus<OmniContext>) => omnislate.light_view((us
 })
 
 const router = new HashRouter({
+	// Tofu: a gallery copy opens on the project list. Upstream's landing page (omniclip.app's own
+	// product page, with ~47 MB of demo videos) is left out of the copy.
 	'/': () => {
-		return html`<landing-page></landing-page>`
+		collaboration.disconnect()
+		return html`<omni-manager></omni-manager>`
 	},
 	'/editor': () => {
 		collaboration.disconnect()
