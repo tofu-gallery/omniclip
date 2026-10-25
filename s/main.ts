@@ -1,4 +1,3 @@
-import posthog from 'posthog-js'
 import {register_to_dom, html, Nexus} from "@benev/slate"
 import {ConstructEditor, single_panel_layout} from "@benev/construct/x/mini.js"
 
@@ -29,13 +28,7 @@ import {ExportPanel} from "./components/omni-timeline/views/export/panel.js"
 import {MediaPlayerPanel} from "./components/omni-timeline/views/media-player/panel.js"
 import {ExportConfirmModal, ExportInProgressOverlay} from './components/omni-timeline/views/export/view.js'
 
-posthog.init('phc_CMbHMWGVJSqM1RqGyGxWCyqgaSGbGFKl964fIN3NDwU',
-	{
-			api_host: 'https://eu.i.posthog.com',
-			person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
-			autocapture: false
-	}
-)
+// Tofu: upstream's PostHog analytics (posthog.init with its project key) is removed; a gallery copy sends no analytics.
 
 const IS_TEST_ENV = window.location.hostname.startsWith("test")
 
