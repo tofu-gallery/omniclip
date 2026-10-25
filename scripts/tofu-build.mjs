@@ -131,8 +131,9 @@ while (queue.length) {
 	}
 }
 
-// 3c. Licences: Omniclip's, the fonts' (beside the fonts), and a list of the code inside the bundles. They are written
-//     as .txt: Tofu's static hosting leaves out repository text such as LICENSE or license.md.
+// 3c. Licences: Omniclip's, the fonts' (beside the fonts), and a list of the code inside the bundles and of the other
+//     third-party files the site serves. They are written as .txt: Tofu's static hosting leaves out repository text
+//     such as LICENSE or license.md.
 copy(join(root, 'LICENSE'), join(site, 'LICENSE.txt'))
 for (const file of ['assets/fonts/Nippo/License/FFL.txt', 'assets/fonts/Poppins/License/OFL.txt']) copy(join(root, file), join(site, file))
 copy(join(root, 'assets/fonts/NotoEmoji/license.md'), join(site, 'assets/fonts/NotoEmoji/license.txt'))
@@ -143,12 +144,28 @@ for (const input of Object.keys(built.metafile.inputs)) {
 }
 const licenceFile = (dir) => readdirSync(dir).find((name) => /^(licen[cs]e|copying)(\.(md|txt))?$/i.test(name))
 const noticeFile = (dir) => readdirSync(dir).find((name) => /^notice(\.(md|txt))?$/i.test(name))
+// Packages whose npm package ships no licence file: the licence of the project they come from, kept in scripts/licenses.
+const ffmpegWasm = ['ffmpeg.wasm-LICENSE.txt', 'ffmpeg.wasm\'s LICENSE (https://github.com/ffmpegwasm/ffmpeg.wasm, tag v0.12.9), which covers @ffmpeg/ffmpeg and @ffmpeg/util']
+const projectLicence = {
+	'@ffmpeg/ffmpeg': ffmpegWasm,
+	'@ffmpeg/util': ffmpegWasm,
+	'gl-transitions': ['gl-transitions-LICENSE.txt', 'the gl-transitions project\'s LICENSE (https://github.com/gl-transitions/gl-transitions, commit 87ed92e). Each transition also names its author and licence in its shader source inside main.js; the two that are not MIT (InvertedPageCurl, BSD-3-Clause; StereoViewer, BSD-2-Clause) carry their full licence text there'],
+}
 const sections = [...packages].sort(([a, x], [b, y]) => x.localeCompare(y) || a.localeCompare(b)).map(([dir, name]) => {
 	const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
 	const file = licenceFile(dir)
 	const notice = noticeFile(dir)
-	return `${name} ${manifest.version}\nLicence: ${manifest.license ?? '(not stated in package.json)'}\n${manifest.homepage ?? ''}\n\n${file ? readFileSync(join(dir, file), 'utf8').trim() : '(The package ships no licence file.)'}${notice ? `\n\n${notice}:\n${readFileSync(join(dir, notice), 'utf8').trim()}` : ''}`
+	const licence = file ? readFileSync(join(dir, file), 'utf8').trim()
+		: projectLicence[name] ? `(The npm package ships no licence file. This is ${projectLicence[name][1]}:)\n\n${readFileSync(join(root, 'scripts/licenses', projectLicence[name][0]), 'utf8').trim()}`
+		: '(The package ships no licence file.)'
+	return `${name} ${manifest.version}\nLicence: ${manifest.license ?? '(not stated in package.json)'}\n${manifest.homepage ?? ''}\n\n${licence}${notice ? `\n\n${notice}:\n${readFileSync(join(dir, notice), 'utf8').trim()}` : ''}`
 })
+// assets/MediaInfoModule.wasm is mediainfo.js's compiled MediaInfoLib (BSD-2-Clause), whose notice travels with it.
+const mediainfo = join(root, 'node_modules/mediainfo.js')
+if (!readFileSync(join(root, 'assets/MediaInfoModule.wasm')).equals(readFileSync(join(mediainfo, 'dist/MediaInfoModule.wasm')))) {
+	fail('assets/MediaInfoModule.wasm is no longer the file mediainfo.js ships: find out whose it is, and its licence')
+}
+const mediainfoVersion = JSON.parse(readFileSync(join(mediainfo, 'package.json'), 'utf8')).version
 const vendored = [
 	['Icons: Carbon (s/icons/carbon-icons)', 's/icons/carbon-icons/LICENSE.md'],
 	['Icons: Gravity UI (s/icons/gravity-ui)', 's/icons/gravity-ui/LICENSE.md'],
@@ -156,11 +173,12 @@ const vendored = [
 	['Icons: Remix Icon (s/icons/remix-icon)', 's/icons/remix-icon/LICENSE.md'],
 	['Aligning guidelines (s/context/controllers/compositor/lib)', 's/context/controllers/compositor/lib/license.md'],
 	['coi-serviceworker (coi-serviceworker.js)', 'node_modules/coi-serviceworker/LICENSE'],
+	[`mediainfo.js ${mediainfoVersion} (assets/MediaInfoModule.wasm, its compiled MediaInfoLib; the JavaScript that loads it comes from jsDelivr)`, 'node_modules/mediainfo.js/LICENSE.txt'],
 ].map(([label, file]) => `${label}\n\n${readFileSync(join(root, file), 'utf8').trim()}`)
 mkdirSync(join(site, 'licenses'), {recursive: true})
 writeFileSync(join(site, 'licenses/THIRD-PARTY-LICENSES.txt'), [
 	'Omniclip, as built for Tofu\'s gallery by scripts/tofu-build.mjs. Omniclip itself is MIT-licensed (../LICENSE.txt).',
-	'The bundles (main.js and the four *worker.js files) contain the npm packages below; s/tools/mp4boxjs/mp4box.js is a copy of mp4box (listed below).',
+	'The bundles (main.js and the four *worker.js files) contain the npm packages below, then code upstream keeps in its own source (the icon sets and the aligning guidelines). coi-serviceworker.js and assets/MediaInfoModule.wasm are listed last. Each font\'s licence sits beside it under assets/fonts.',
 	'Scripts, styles and fonts the page loads from CDNs (jsDelivr, unpkg, Google Fonts) are not part of this site; TOFU.md in the source lists them.',
 	...sections, ...vendored,
 ].join(`\n\n${'='.repeat(78)}\n\n`) + '\n')
