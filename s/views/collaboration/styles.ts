@@ -7,7 +7,7 @@ export const styles = css`
 		gap: 0.3em;
 		border: 1px solid white;
 		border-radius: 5px;
-		font-family: Nippo-Regular;
+		font-family: Poppins-Regular;
 		background: white;
 	}
 

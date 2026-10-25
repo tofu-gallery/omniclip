@@ -1,4 +1,3 @@
-@import url(../assets/fonts/Nippo/Fonts/WEB/css/nippo.css);
 @import url(../assets/fonts/Poppins/Fonts/WEB/css/poppins.css);
 @import url(../assets/fonts/NotoEmoji/Fonts/WEB/css/noto.css);
 @import url(./views/tooltip/styles.css);
@@ -73,7 +72,7 @@
 			background: none;
 			border: none;
 			color: gray;
-			font-family: Nippo-Regular;
+			font-family: Poppins-Regular;
 
 			&:not(:disabled) {
 				color: white;

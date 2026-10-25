@@ -13802,7 +13802,7 @@ h2 {
 	}
 
 	& button {
-		font-family: "Nippo-Regular";
+		font-family: "Poppins-Regular";
 		color: #fff;
 		border: 1px solid #111;
 		background-image: -webkit-gradient(
@@ -13962,7 +13962,7 @@ h2 {
 		gap: 0.3em;
 		border: 1px solid white;
 		border-radius: 5px;
-		font-family: Nippo-Regular;
+		font-family: Poppins-Regular;
 		background: white;
 	}
 
@@ -14417,7 +14417,7 @@ h2 {
 				position: sticky;
 				left: 0;
 				z-index: 800;
-				font-family: "Nippo-Regular";
+				font-family: "Poppins-Regular";
 				color: #fff;
 				border: 1px solid #111;
 				background-image: -webkit-gradient(
@@ -14654,7 +14654,7 @@ h2 {
 		justify-content: space-between;
 
 		& .time {
-			font-family: Nippo-Regular;
+			font-family: Poppins-Regular;
 		}
 
 		& button {
@@ -14896,7 +14896,7 @@ h2 {
 			justify-content: center;
 
 			& .index {
-				font-family: Nippo-Regular;
+				font-family: Poppins-Regular;
 				font-size: 0.8em;
 				border-radius: 2px;
 				margin-right: 0.5em;
@@ -15077,7 +15077,7 @@ h2 {
 			z-index: 10;
 			text-shadow: 0px 0px 5px black;
 			color: white;
-			font-family: Nippo-Regular;
+			font-family: Poppins-Regular;
 			margin: 0.2em;
 		}
 
@@ -16024,7 +16024,7 @@ h2 {
 		color: black;
 		margin-top: 0.2em;
 		padding-left: 0.3em;
-		font-family: Nippo-Regular;
+		font-family: Poppins-Regular;
 		font-size: 0.8em;
 		max-width: 300px;
 
@@ -16118,7 +16118,7 @@ h2 {
 		border-radius: 5px;
 		color: black;
 		font-size: 0.8em;
-		font-family: Nippo-Regular;
+		font-family: Poppins-Regular;
 	}
 `,$3=DA`
  :host {

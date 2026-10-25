@@ -141,7 +141,7 @@ export const styles = css`
 			z-index: 10;
 			text-shadow: 0px 0px 5px black;
 			color: white;
-			font-family: Nippo-Regular;
+			font-family: Poppins-Regular;
 			margin: 0.2em;
 		}
 

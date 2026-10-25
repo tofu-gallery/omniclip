@@ -135,7 +135,7 @@ while (queue.length) {
 //     third-party files the site serves. They are written as .txt: Tofu's static hosting leaves out repository text
 //     such as LICENSE or license.md.
 copy(join(root, 'LICENSE'), join(site, 'LICENSE.txt'))
-for (const file of ['assets/fonts/Nippo/License/FFL.txt', 'assets/fonts/Poppins/License/OFL.txt']) copy(join(root, file), join(site, file))
+copy(join(root, 'assets/fonts/Poppins/License/OFL.txt'), join(site, 'assets/fonts/Poppins/License/OFL.txt'))
 copy(join(root, 'assets/fonts/NotoEmoji/license.md'), join(site, 'assets/fonts/NotoEmoji/license.txt'))
 const packages = new Map()
 for (const input of Object.keys(built.metafile.inputs)) {
@@ -188,13 +188,16 @@ writeFileSync(join(site, 'README.txt'), [
 	'',
 ].join('\n'))
 
-// 4. Checks: nothing of PostHog, no source maps or host configuration, within the Free static lane's limits.
+// 4. Checks: nothing of PostHog, nothing of the Nippo font (its Fontshare EULA forbids passing it on or serving it),
+//    no source maps or host configuration, within the Free static lane's limits.
 const files = []
 const walk = (dir) => { for (const name of readdirSync(dir)) { const path = join(dir, name); statSync(path).isDirectory() ? walk(path) : files.push(path) } }
 walk(site)
 for (const file of files) {
 	if (/\.(map|ts)$|(^|\/)_(headers|redirects)$/.test(file)) fail(`${relative(root, file)} must not be published`)
+	if (/nippo/i.test(relative(site, file))) fail(`${relative(root, file)} is the Nippo font, which its EULA does not let a copy serve`)
 	if (/\.(js|html|css)$/.test(file) && /posthog|phc_[A-Za-z0-9]{20}/i.test(readFileSync(file, 'utf8'))) fail(`${relative(root, file)} mentions PostHog`)
+	if (/\.(js|html|css)$/.test(file) && /nippo/i.test(readFileSync(file, 'utf8'))) fail(`${relative(root, file)} still asks for the Nippo font`)
 }
 const bytes = files.reduce((sum, file) => sum + statSync(file).size, 0)
 if (files.length >= 500) fail(`${files.length} files: over the Free static lane's 500`)

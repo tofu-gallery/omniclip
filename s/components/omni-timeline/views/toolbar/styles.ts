@@ -30,7 +30,7 @@ export const styles = css`
 		justify-content: space-between;
 
 		& .time {
-			font-family: Nippo-Regular;
+			font-family: Poppins-Regular;
 		}
 
 		& button {

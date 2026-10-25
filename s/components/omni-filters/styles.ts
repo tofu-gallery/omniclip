@@ -86,7 +86,7 @@ h2 {
 	}
 
 	& button {
-		font-family: "Nippo-Regular";
+		font-family: "Poppins-Regular";
 		color: #fff;
 		border: 1px solid #111;
 		background-image: -webkit-gradient(

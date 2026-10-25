@@ -276,7 +276,7 @@ export const confirmModalStyles = css`
 		color: black;
 		margin-top: 0.2em;
 		padding-left: 0.3em;
-		font-family: Nippo-Regular;
+		font-family: Poppins-Regular;
 		font-size: 0.8em;
 		max-width: 300px;
 
@@ -370,7 +370,7 @@ export const confirmModalStyles = css`
 		border-radius: 5px;
 		color: black;
 		font-size: 0.8em;
-		font-family: Nippo-Regular;
+		font-family: Poppins-Regular;
 	}
 `
 export const exportOverlayStyles = css`

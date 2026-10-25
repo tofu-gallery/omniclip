@@ -22,7 +22,7 @@ export const styles = css`
 				position: sticky;
 				left: 0;
 				z-index: 800;
-				font-family: "Nippo-Regular";
+				font-family: "Poppins-Regular";
 				color: #fff;
 				border: 1px solid #111;
 				background-image: -webkit-gradient(

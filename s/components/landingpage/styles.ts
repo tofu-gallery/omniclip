@@ -129,14 +129,14 @@ h1 {
 
 h1 span, h2 span {
 	background-clip: text !important;
-	font-family: Nippo-Regular;
+	font-family: Poppins-Regular;
 	background: linear-gradient(180.2deg, #FFFFFF 29.5%, #848588 50.27%, #FFFFFF 72.49%);
 	display: inline-block;
 	line-height: 1.3;
 }
 
 h2 {
-	font-family: Nippo-Regular;
+	font-family: Poppins-Regular;
 	font-size: 2.5em;
 	text-align: center;
 	color: white;
@@ -1782,7 +1782,7 @@ nav .nav {
 	padding: 0.4em 1em;
 	color: black;
 	margin: 1em;
-	font-family: "Nippo-Regular";
+	font-family: "Poppins-Regular";
 	gap: 0.5em;
 	border-radius: 20px;
 	font-weight: 500;
