@@ -1,0 +1,84 @@
+# Omniclip on Tofu
+
+Omniclip, by Przemysław Gałęzki (zenkyuv) and contributors, is a video editor that runs in the browser. You import video, audio and pictures (they stay on your device), lay them out on a multi-track timeline, trim and split them, add text with its own fonts, fills and shadows, apply filters, animations and transitions between clips, and export the result as an MP4 at a resolution and bitrate you choose, up to 4K. Projects are kept in the browser: a project list to open, export (as a zip) or delete them, undo and redo, and an optional real-time collaboration session with other people. There is no account, application server or database.
+
+This is upstream's version 1.1.3. Upstream's README says Omniclip 2.0 is in development; it is not in this copy.
+
+## Running a copy
+
+- **Tofu framework preset:** `static`.
+- **Root folder: `site/`.** It holds `index.html`, the bundles and the files they use. Do not deploy the repository root: building it needs upstream's toolchain (`tsc`, `@benev/turtle`) and esbuild, which Tofu's static hosting does not run.
+- **Install and build commands at deploy:** none. **Output directory:** `site/`, committed on the `tofu` branch by `scripts/tofu-build.mjs`.
+- **Environment variables:** none, at build time or at runtime. No key, Tofu account or third-party account is involved.
+- **Database:** none. Everything a person makes stays in their browser, for that address: projects in `localStorage` (`omniclip_<id>`), imported media in IndexedDB and the origin private file system. Clearing the site's data deletes the projects; a project can be exported as a zip from the project list first.
+- **Browser:** a Chromium-based browser (Chrome, Edge). The editor decodes and encodes with WebCodecs, and upstream warns that older browsers and other engines may not work.
+- **Cross-origin isolation:** `coi-serviceworker.js` installs a service worker that adds the COOP and COEP headers, so the first visit reloads itself once. This needs the site at the root of its address over HTTPS (or `localhost`).
+- **Serve at the root `/`.** The page and the code name files as `/assets/...`.
+- **First use:** a new project opens with the timeline alone; the **+** beside its tab adds the Media, Text, Player and other panels. The Media panel waits until ffmpeg.wasm's core (31 MB, from unpkg) has downloaded, and imports one file per pick.
+
+## What we changed and why
+
+Every change is on the `tofu` branch, one commit each:
+
+1. **The copy opens on the project list, and the landing page's media is gone.** Tofu's GitHub import takes archives up to 50 MB; upstream's tree is about 89 MB. 46.9 MB of it is the six demo videos of upstream's landing page (omniclip.app's own product page: `assets/animation.mp4`, `export4k.mp4`, `filters.mp4`, `localfonts.mp4`, `resizable.mp4`, `transitions.mp4`), so they are deleted, and `/` now shows the editor's project list, as `#/editor` does, instead of a landing page with empty video boxes (`s/main.ts`). The landing page's source stays in `s/components/landingpage`, unrouted, and its pictures and transition GIFs stay in `assets/`, unpublished. Two 12.2 MB copies of a test clip (`bbb_video_avc_frag.mp4` under `s/`) that no code refers to are deleted too.
+2. **PostHog analytics removed.** Upstream's `s/main.ts` started `posthog-js` with its project key, sending to `eu.i.posthog.com`. The import and the call are gone, and `posthog-js` left `package.json` with the next commit. Nothing else was sending usage data.
+3. **A finished site in `site/`, built by `scripts/tofu-build.mjs`.** Upstream serves `tsc`'s output with a copy of `node_modules` behind an importmap read by es-module-shims; a Tofu import leaves `node_modules` out, and the Free plan's static hosting builds only Vite apps. The script runs upstream's own steps (`tsc` with `tsconfig.json`, then `@benev/turtle` to render `index.html` and copy the stylesheets, as `turtle-standard` does), then bundles `x/main.js` and the four module workers (export encoder and decoder, the OPFS worker, ffmpeg.wasm's worker) with esbuild 0.28.2 into five files, minified, with names kept and licence comments at their ends. Two things the importmap did are done by the script: each `new Worker(new URL("…", import.meta.url))` points at that worker's bundle, and package subpaths a package's `exports` hides (such as `@zip.js/zip.js/index.js`) resolve to that file. `index.html` is upstream's, loading `main.js` as a plain module without es-module-shims and the importmap. `site/` also gets `coi-serviceworker.js`, the stylesheets, only the files under `assets/` that the page, the stylesheets or the bundles name (90 of them: fonts, icons, `MediaInfoModule.wasm`, the filter preview picture and the transitions tutorial video), the licence files and `licenses/THIRD-PARTY-LICENSES.txt`. The script stops if a referenced file is missing, if PostHog appears, or if the site reaches 500 files. `package.json`: esbuild added as a development dependency, `posthog-js` removed.
+4. **The licence files are published as `.txt`.** Tofu's static hosting leaves repository text such as `LICENSE` out of a site, so `site/LICENSE.txt` and the Noto Emoji font's `license.txt` carry them.
+5. **Added this `TOFU.md`.**
+
+No other upstream file was edited. The Omniclip name, logo, page title (`omniclip`) and every link inside the editor are upstream's. Upstream's page links a favicon, `assets/favicon-32x32.png`, that upstream never shipped; it is left as it is (the page has no favicon, as on omniclip.app).
+
+## External connections and data
+
+The editor loads parts of itself from public CDNs, as upstream does; they were left where upstream loads them from:
+
+- **cdn.jsdelivr.net:** Shoelace 2.20.0 (theme and components), PixiJS 7.4.2 with pixi-filters 5.3.0, `@pixi/graphics-extras` 7.1.4 and three `@pixi-essentials` packages (the page's script tags), mediainfo.js 0.3.2 and opfs-tools 0.7.0 (imported by the code), and web-demuxer 1.0.5's FFmpeg-based WebAssembly loader (when media is read).
+- **unpkg.com:** `@ffmpeg/core` 0.12.5 (`ffmpeg-core.js` and the 31 MB `ffmpeg-core.wasm`), downloaded when the editor opens; the media panel waits for it, and export uses it to add audio.
+- **fonts.googleapis.com / fonts.gstatic.com:** Plus Jakarta Sans, Noto Color Emoji and Noto Emoji.
+- **Collaboration, only when a person starts or joins a session from the Collaborate button:** sparrow-rtc's signalling server `wss://signaller.sparrow.benev.gg` (run by sparrow-rtc's author, not by Tofu or the copy's owner) and public STUN servers (`stun.l.google.com`, `stun.services.mozilla.com`, `server2024.stunprotocol.org`); the session itself is peer-to-peer WebRTC between the people in it. The signaller answered on 2026-10-25. If it goes away, collaboration stops working and the rest of the editor does not notice.
+
+A copy's media never leaves the browser except to a collaborator a person invites. If one of the CDNs is unreachable, the editor does not start.
+
+## Size
+
+Upstream's tree at 1.1.3 is 471 files and about 89 MB. After the deletions above, the `tofu` branch's archive measured 18.8 MB (`legacy.zip`, the importer's download). `site/` is 103 files and 15.9 MB; the largest file is `main.js` at 9.7 MB. Most of that is upstream's own dependencies as it uses them: ffprobe-wasm's worker, inlined as base64 (4.3 MB), and Babylon.js and the Rapier physics engine, which `@benev/construct`'s main entry brings along (upstream's importmap loaded them too). The editor starts that ffprobe worker but never calls it (its one caller, `get_frames_count`, is unused), and its `ffprobe-wasm.wasm` is not part of the site.
+
+## Upstream and licence
+
+- Upstream: <https://github.com/omni-media/omniclip>, default branch `main`.
+- Base commit: `cbe581a4a788d9982ffd4a10025c678f9e8707d6` (2025-08-07, "1.1.3", tag `v1.1.3`).
+- Gallery fork: <https://github.com/tofu-gallery/omniclip>. Its `main` branch mirrors upstream untouched; every adaptation is on `tofu`.
+- Gallery pin: tag `pin/2026-10-25`, created only after the checks below passed.
+- Omniclip is licensed under the MIT License (`LICENSE`, Copyright (c) 2024 Przemysław Gałęzki), unchanged; `site/LICENSE.txt` is a copy. Upstream's `package.json` says `"license": "ISC"`; we read the `LICENSE` file as governing.
+- **Bundled code** (`site/licenses/THIRD-PARTY-LICENSES.txt` lists each package folder with its version, licence, licence text and any NOTICE): mostly MIT, BSD-2/3-Clause and Apache-2.0 (lit, @benev/*, @ffmpeg/ffmpeg and util, @zip.js, wavesurfer.js, @floating-ui, Babylon.js, Rapier, ffprobe-wasm's wrapper). Two caveats:
+  - **GSAP 3.12.5** is under GreenSock's Standard "no charge" licence, not an open-source licence: free for sites and apps whose users are not charged a fee. An owner who charges people for their copy should read <https://gsap.com/standard-license>.
+  - **gl-transitions 1.43.0** states no licence in its package; its project is MIT, and each transition names its own author and licence in its data (mostly MIT).
+- **Vendored in upstream's source:** the icon sets in `s/icons` (Carbon, Material Design Icons and Remix Icon under Apache-2.0, Gravity UI under MIT), the aligning guidelines in `s/context/controllers/compositor/lib` (MIT, Copyright (c) 2022 Jin) and a copy of mp4box.js in `s/tools/mp4boxjs` (BSD-3-Clause, GPAC). Their licences are in the same file.
+- **Fonts served from `site/assets/fonts`:** Poppins (SIL Open Font License 1.1, Indian Type Foundry), Noto Emoji (SIL OFL 1.1, Google) and Nippo, which comes with the Fontshare Free Font EULA (`FFL.txt`), not an open-source licence. Upstream serves all three the same way; each licence file sits beside its font.
+- **Loaded at runtime, not part of the site:** ffmpeg.wasm's core (`@ffmpeg/core`, a build of FFmpeg, GPL-2.0-or-later), web-demuxer's FFmpeg-based WebAssembly, mediainfo.js (BSD-2-Clause) and the CDN scripts above, each under its own licence, fetched by the visitor's browser from the CDN that publishes it.
+- "Omniclip" and its logo are upstream's. A copy keeps them and should not suggest that the Omniclip project runs it.
+
+## Rebuilding
+
+You need Node.js 22 and npm. From the repository root:
+
+```sh
+npm ci --no-audit --no-fund
+node scripts/tofu-build.mjs
+python3 -I -m http.server 8000 --bind 127.0.0.1 --directory site
+```
+
+Then open <http://127.0.0.1:8000/> in Chrome. On macOS arm64, upstream's lockfile lacks Rollup's native package, which only upstream's own `npm run build` uses; the gallery build does not run Rollup. The bundles are reproducible: two builds from the same tree gave the same `main.js`. Always replace the whole of `site/` from one build.
+
+## Verification on 2026-10-25
+
+On macOS with Node 22.22.3, npm 10.9.8 and esbuild 0.28.2:
+
+- `npm ci` installed 911 packages from upstream's lockfile; upstream's unchanged `npm run build` compiled (its Rollup step failed on Rollup's missing native package, which its script ignores).
+- `node scripts/tofu-build.mjs` reported `site/ is ready (103 files, 15.88 MB, 33 npm packages bundled, 90 referenced files copied)`. Every other `import.meta.url` left in the bundles is ffmpeg.wasm's optional worker address (used only when a caller passes its own worker file, which Omniclip does not) or zip.js's base address (zip.js builds its workers inline, as blob URLs, so nothing is fetched from it).
+- `python3 -I -m http.server` served `site/` on 127.0.0.1: `/` returned `200 text/html`, and the five bundles, `coi-serviceworker.js`, both stylesheets, `assets/MediaInfoModule.wasm` (`application/wasm`) and `assets/icon3.png` returned 200.
+- Headless Chromium (Playwright 1.64.0, SwiftShader WebGL, a scratch profile) opened that address: the page reloaded once through the service worker and was then cross-origin isolated, with H.264 decoding and encoding available. The project list showed, and **New project** opened the editor. In the Media panel (after ffmpeg.wasm's core downloaded), a 3-second H.264 test clip with AAC audio and a PNG picture, both made locally with ffmpeg, imported as a video card with its first frame and an image card. Picked together, only the clip was imported, since upstream's `import_file` reads the first file of a pick; each was then picked on its own. Both were added to the timeline, the Text panel's default text was added, and the Player panel, once **play** was pressed, showed the clip. The project, saved in `localStorage`, held a video, an image and a text effect. **Export** rendered in 35 seconds and **Save Video** (answered by a stub that kept the bytes in the page) produced 174,373 bytes; `ffprobe` read H.264 1920×1080, 8.8 s, 220 frames, with the clip's AAC audio. Its frame at 1 s showed the test clip, and at 6 s the text. After a reload, the project list showed the project at `00:00:08s`. There were no page errors. The browser's console logged `Failed to load resource: net::ERR_INVALID_URL` twice, and the two Shoelace files the first load was fetching when the service worker reloaded the page were aborted. Requests went to 127.0.0.1, cdn.jsdelivr.net, unpkg.com and fonts.googleapis.com only. An earlier run with Playwright's default throwaway context could not download the 31 MB ffmpeg core (`net::ERR_CACHE_WRITE_FAILURE`, its in-memory cache), and the media panel then showed "FFMPEG ERROR LOADING: Failed to fetch"; with an ordinary profile the download completed.
+- Tofu's own checks (`lane_check_r9.mts`, which imports the branch the way Tofu's GitHub import does) on the `tofu` branch with root `site`, before the licence files were renamed: detected `static`, a finished site, no file of a type the static lane refuses, `safety ok (3 findings)`, none of them blocking, and `free static limit: 101/500`; the two files not published were `LICENSE` and `license.md`. Tofu's rule (`staticPathVerdict`) run on this `site/` publishes all 103 files. The same check on the pin's tag can only run once the tag exists, after this file was committed.
+- Not checked here: Safari, Firefox and a phone; the editor inside the gallery's player frame (a cross-site frame is not cross-origin isolated, and Chrome refuses such a frame the save picker that **Save Video** opens); the Collaborate session with a second person.
+
+Nothing was deployed; only this fork's `tofu` branch and its tag were pushed.
